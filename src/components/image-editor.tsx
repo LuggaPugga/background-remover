@@ -3,6 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { BackgroundColorPicker } from "./background-color-picker";
 import { Button } from "./ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "./ui/select";
 
 interface ImageEditorProps {
 	originalImage: string;
@@ -23,6 +30,9 @@ export function ImageEditor({
 }: ImageEditorProps) {
 	const [backgroundColor, setBackgroundColor] = useState("transparent");
 	const [showOriginal, setShowOriginal] = useState(false);
+	const [downloadFormat, setDownloadFormat] = useState<
+		"png" | "webp" | "avif" | "gif"
+	>("png");
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
@@ -53,15 +63,32 @@ export function ImageEditor({
 
 			ctx.drawImage(img, 0, 0);
 
-			canvas.toBlob((blob) => {
-				if (!blob) return;
-				const url = URL.createObjectURL(blob);
-				const link = document.createElement("a");
-				link.href = url;
-				link.download = `background-removed-${Date.now()}.png`;
-				link.click();
-				URL.revokeObjectURL(url);
-			}, "image/png");
+			const mimeTypes: Record<typeof downloadFormat, string> = {
+				png: "image/png",
+				webp: "image/webp",
+				avif: "image/avif",
+				gif: "image/gif",
+			};
+
+			const mimeType = mimeTypes[downloadFormat];
+			const quality =
+				downloadFormat === "webp" || downloadFormat === "avif"
+					? 0.92
+					: undefined;
+
+			canvas.toBlob(
+				(blob) => {
+					if (!blob) return;
+					const url = URL.createObjectURL(blob);
+					const link = document.createElement("a");
+					link.href = url;
+					link.download = `background-removed-${Date.now()}.${downloadFormat}`;
+					link.click();
+					URL.revokeObjectURL(url);
+				},
+				mimeType,
+				quality,
+			);
 		};
 		img.src = processedImage;
 	};
@@ -162,10 +189,28 @@ export function ImageEditor({
 							</Button>
 						)}
 						{processedImage && (
-							<Button size="lg" onClick={handleDownload} className="w-full">
-								<Download className="mr-2 h-4 w-4" />
-								Download Image
-							</Button>
+							<div className="flex gap-2">
+								<Select
+									value={downloadFormat}
+									onValueChange={(value: "png" | "webp" | "avif" | "gif") =>
+										setDownloadFormat(value)
+									}
+								>
+									<SelectTrigger className="h-11 w-full">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="png">PNG</SelectItem>
+										<SelectItem value="webp">WebP</SelectItem>
+										<SelectItem value="avif">AVIF</SelectItem>
+										<SelectItem value="gif">GIF</SelectItem>
+									</SelectContent>
+								</Select>
+								<Button size="lg" onClick={handleDownload} className="shrink-0">
+									<Download className="mr-2 h-4 w-4" />
+									Download
+								</Button>
+							</div>
 						)}
 						<Button
 							size="lg"
