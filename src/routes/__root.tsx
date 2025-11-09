@@ -1,4 +1,5 @@
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import appCss from "../styles.css?url";
 
@@ -73,6 +74,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 		<html lang="en">
 			<head>
 				<HeadContent />
+				<Analytics />
 			</head>
 			<body>
 				<ThemeProvider enableSystem attribute="class">
