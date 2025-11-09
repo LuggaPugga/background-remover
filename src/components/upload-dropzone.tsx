@@ -35,8 +35,7 @@ export const UploadDropzone = forwardRef<HTMLInputElement, UploadDropzoneProps>(
 		};
 
 		return (
-			<button
-				type="button"
+			<section
 				onDragOver={onDragOver}
 				onDragLeave={onDragLeave}
 				onDrop={onDrop}
@@ -47,7 +46,6 @@ export const UploadDropzone = forwardRef<HTMLInputElement, UploadDropzoneProps>(
 				}}
 				onKeyDown={onKeyDown}
 				aria-label="Upload image by dragging and dropping or clicking"
-				disabled={disabled}
 				className={cn(
 					"relative flex min-h-[400px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors",
 					isDragging
@@ -90,7 +88,7 @@ export const UploadDropzone = forwardRef<HTMLInputElement, UploadDropzoneProps>(
 					onChange={handleFileInput}
 					className="hidden"
 				/>
-			</button>
+			</section>
 		);
 	},
 );
