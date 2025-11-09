@@ -1,14 +1,12 @@
-import { Download, Sparkles, X } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
 	initializeModel,
 	processImage as processImageWithModel,
 } from "@/lib/background-removal";
 import { Header } from "./header";
 import { HeroSection } from "./hero-section";
-import { ImageComparison } from "./image-comparison";
+import { ImageEditor } from "./image-editor";
 import { ModelLoadingIndicator } from "./model-loading-indicator";
 import { UploadDropzone } from "./upload-dropzone";
 
@@ -110,15 +108,6 @@ export function BackgroundRemover() {
 		}
 	};
 
-	const downloadImage = () => {
-		if (!processedImage) return;
-
-		const link = document.createElement("a");
-		link.href = processedImage;
-		link.download = "background-removed.png";
-		link.click();
-	};
-
 	const reset = () => {
 		setOriginalImage(null);
 		setProcessedImage(null);
@@ -157,36 +146,14 @@ export function BackgroundRemover() {
 							disabled={isModelLoading}
 						/>
 					) : (
-						<div className="space-y-6">
-							<ImageComparison
-								originalImage={originalImage}
-								processedImage={processedImage}
-								isProcessing={isProcessing}
-							/>
-
-							<div className="flex flex-wrap items-center justify-center gap-3">
-								{!processedImage && !isProcessing && (
-									<Button
-										size="lg"
-										onClick={processImage}
-										disabled={isModelLoading}
-									>
-										<Sparkles className="mr-2 h-4 w-4" />
-										Remove Background
-									</Button>
-								)}
-								{processedImage && (
-									<Button size="lg" onClick={downloadImage}>
-										<Download className="mr-2 h-4 w-4" />
-										Download Image
-									</Button>
-								)}
-								<Button size="lg" variant="outline" onClick={reset}>
-									<X className="mr-2 h-4 w-4" />
-									Start Over
-								</Button>
-							</div>
-						</div>
+						<ImageEditor
+							originalImage={originalImage}
+							processedImage={processedImage}
+							isProcessing={isProcessing}
+							onProcess={processImage}
+							onReset={reset}
+							isModelLoading={isModelLoading}
+						/>
 					)}
 				</div>
 			</main>
