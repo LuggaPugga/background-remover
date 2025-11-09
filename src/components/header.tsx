@@ -24,10 +24,16 @@ export function Header() {
 		<header className="border-b border-border">
 			<div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
 				<div className="flex items-center gap-2">
-					<div className="flex h-8 w-8 items-center justify-center rounded-md bg-foreground">
-						<Sparkles className="h-4 w-4 text-background" />
-					</div>
-					<span className="text-sm font-medium">Background Remover</span>
+					<Button
+						variant="ghost"
+						className="py-6"
+						onClick={() => window.location.reload()}
+					>
+						<div className="flex size-8 items-center justify-center rounded-md bg-foreground">
+							<Sparkles className="h-4 w-4 text-background" />
+						</div>
+						<span className="text-sm font-medium">Background Remover</span>
+					</Button>
 				</div>
 				<div className="flex items-center gap-2">
 					<ThemeToggle />
