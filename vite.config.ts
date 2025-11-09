@@ -3,12 +3,29 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
-import { nitroV2Plugin } from '@tanstack/nitro-v2-vite-plugin'
+import { nitro } from 'nitro/vite'
+import packageJson from './package.json' with { type: 'json' }
 
-const config = defineConfig({
+const config = defineConfig(() => ({
+	server: {
+		headers: {
+		  'Cross-Origin-Opener-Policy': 'same-origin',
+		  'Cross-Origin-Embedder-Policy': 'require-corp',
+		},
+	  },
+  
+  resolve:
+    process.env.NODE_ENV === "production"
+      ? {
+          alias: {
+            "@huggingface/transformers":
+              `https://cdn.jsdelivr.net/npm/@huggingface/transformers@${packageJson.dependencies['@huggingface/transformers'].replace('^', '')}`,
+          },
+        }
+      : {},
+
   plugins: [
-    nitroV2Plugin(),
-    // this is the plugin that enables path aliases
+    nitro({	}),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
     }),
@@ -16,6 +33,6 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
-})
+}))
 
 export default config
