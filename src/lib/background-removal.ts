@@ -7,9 +7,23 @@ import {
 	RawImage,
 } from "@huggingface/transformers";
 
-const WEBGPU_MODEL_ID = "Xenova/modnet";
-const FALLBACK_MODEL_ID = "briaai/RMBG-1.4";
-const PROCESSOR_CONFIG = {
+export interface ProcessorConfig {
+	revision?: string;
+	config?: Record<string, unknown>;
+}
+
+export interface ModelConfig {
+	id: string;
+	name: string;
+	requiresWebGPU: boolean;
+	description: string;
+	device?: "webgpu" | "wasm";
+	processorConfig?: ProcessorConfig;
+	isDefault?: boolean;
+	dtype?: "fp32" | "fp16" | "int8";
+}
+
+const PROCESSOR_CONFIG_BASE = {
 	do_normalize: true,
 	do_rescale: true,
 	do_resize: true,
@@ -19,6 +33,31 @@ const PROCESSOR_CONFIG = {
 	rescale_factor: 0.00392156862745098,
 	size: { width: 1024, height: 1024 },
 };
+
+export const MODELS: ModelConfig[] = [
+	{
+		id: "briaai/RMBG-1.4",
+		name: "RMBG-1.4",
+		requiresWebGPU: false,
+		description: "Cross-browser compatible model",
+		isDefault: true,
+		processorConfig: {
+			revision: "main",
+			config: {
+				...PROCESSOR_CONFIG_BASE,
+				do_pad: true,
+				image_std: [0.5, 0.5, 0.5] as [number, number, number],
+			},
+		},
+	},
+	{
+		id: "Xenova/modnet",
+		name: "MODNet (WebGPU)",
+		requiresWebGPU: true,
+		description: "Fast WebGPU-accelerated model",
+		device: "webgpu",
+	},
+];
 
 interface ModelState {
 	model: PreTrainedModel | null;
@@ -61,13 +100,44 @@ const detectIOS = (): boolean => {
 	);
 };
 
+export async function checkWebGPUAvailability(): Promise<boolean> {
+	const gpu = (navigator as GPU).gpu;
+	if (!gpu) {
+		return false;
+	}
+
+	try {
+		const adapter = await gpu.requestAdapter();
+		return adapter !== null;
+	} catch {
+		return false;
+	}
+}
+
+const getDefaultModel = (): ModelConfig => {
+	return MODELS.find((m) => m.isDefault) || MODELS[0];
+};
+
 const state: ModelState = {
 	model: null,
 	processor: null,
 	isWebGPUSupported: false,
-	currentModelId: FALLBACK_MODEL_ID,
+	currentModelId: getDefaultModel().id,
 	isIOS: detectIOS(),
 };
+
+let progressCallback: ((progress: number, status: string) => void) | null =
+	null;
+
+export function setProgressCallback(
+	callback: (progress: number, status: string) => void,
+): void {
+	progressCallback = callback;
+}
+
+export function clearProgressCallback(): void {
+	progressCallback = null;
+}
 
 const configureEnvironment = (useProxy: boolean): void => {
 	env.allowLocalModels = false;
@@ -76,10 +146,105 @@ const configureEnvironment = (useProxy: boolean): void => {
 	}
 };
 
-const loadFallbackModel = async (): Promise<void> => {
+const loadModel = async (modelConfig: ModelConfig): Promise<void> => {
+	if (modelConfig.requiresWebGPU && modelConfig.device === "webgpu") {
+		const gpu = (navigator as GPU).gpu;
+		if (!gpu) {
+			throw new Error("WebGPU is required but not available");
+		}
+
+		const adapter = await gpu.requestAdapter();
+		if (!adapter) {
+			throw new Error("WebGPU adapter not available");
+		}
+
+		progressCallback?.(0.1, "Initializing WebGPU...");
+		configureEnvironment(true);
+		await new Promise((resolve) => setTimeout(resolve, 200));
+
+		progressCallback?.(0.3, `Loading ${modelConfig.name} model...`);
+		state.model = await AutoModel.from_pretrained(modelConfig.id, {
+			device: "webgpu",
+			progress_callback: (progressInfo) => {
+				const progress =
+					typeof progressInfo === "number"
+						? progressInfo
+						: "progress" in progressInfo
+							? progressInfo.progress
+							: 0;
+				progressCallback?.(
+					0.3 + progress * 0.5,
+					`Loading ${modelConfig.name} model... ${Math.round(progress * 100)}%`,
+				);
+			},
+		});
+
+		progressCallback?.(0.8, `Loading ${modelConfig.name} processor...`);
+		state.processor = await AutoProcessor.from_pretrained(modelConfig.id);
+		state.isWebGPUSupported = true;
+		progressCallback?.(1.0, "Model loaded");
+	} else {
+		configureEnvironment(true);
+
+		const modelOptions: Record<string, unknown> = {};
+		if (modelConfig.dtype) {
+			modelOptions.dtype = modelConfig.dtype;
+		}
+
+		progressCallback?.(0.2, `Loading ${modelConfig.name} model...`);
+		state.model = await AutoModel.from_pretrained(
+			modelConfig.id,
+			Object.keys(modelOptions).length > 0
+				? {
+						...modelOptions,
+						progress_callback: (progressInfo) => {
+							const progress =
+								typeof progressInfo === "number"
+									? progressInfo
+									: "progress" in progressInfo
+										? progressInfo.progress
+										: 0;
+							progressCallback?.(
+								0.2 + progress * 0.5,
+								`Loading ${modelConfig.name} model... ${Math.round(progress * 100)}%`,
+							);
+						},
+					}
+				: {
+						progress_callback: (progressInfo) => {
+							const progress =
+								typeof progressInfo === "number"
+									? progressInfo
+									: "progress" in progressInfo
+										? progressInfo.progress
+										: 0;
+							progressCallback?.(
+								0.2 + progress * 0.5,
+								`Loading ${modelConfig.name} model... ${Math.round(progress * 100)}%`,
+							);
+						},
+					},
+		);
+
+		progressCallback?.(0.7, `Loading ${modelConfig.name} processor...`);
+		if (modelConfig.processorConfig) {
+			state.processor = await AutoProcessor.from_pretrained(
+				modelConfig.id,
+				modelConfig.processorConfig,
+			);
+		} else {
+			state.processor = await AutoProcessor.from_pretrained(modelConfig.id);
+		}
+		progressCallback?.(1.0, "Model loaded");
+	}
+};
+
+const loadIOSModel = async (): Promise<void> => {
+	const defaultModel = getDefaultModel();
 	configureEnvironment(true);
 
-	state.model = await AutoModel.from_pretrained(FALLBACK_MODEL_ID, {
+	progressCallback?.(0.2, `Loading ${defaultModel.name} model...`);
+	state.model = await AutoModel.from_pretrained(defaultModel.id, {
 		progress_callback: (progressInfo) => {
 			const progress =
 				typeof progressInfo === "number"
@@ -87,82 +252,63 @@ const loadFallbackModel = async (): Promise<void> => {
 					: "progress" in progressInfo
 						? progressInfo.progress
 						: 0;
-			console.log(`Loading model: ${Math.round(progress * 100)}%`);
+			progressCallback?.(
+				0.2 + progress * 0.5,
+				`Loading ${defaultModel.name} model... ${Math.round(progress * 100)}%`,
+			);
 		},
 	});
 
-	state.processor = await AutoProcessor.from_pretrained(FALLBACK_MODEL_ID, {
-		revision: "main",
+	progressCallback?.(0.7, `Loading ${defaultModel.name} processor...`);
+	state.processor = await AutoProcessor.from_pretrained(defaultModel.id, {
 		config: {
-			...PROCESSOR_CONFIG,
-			do_pad: true,
-			image_std: [0.5, 0.5, 0.5] as [number, number, number],
-		},
-	});
-};
-
-const loadIOSModel = async (): Promise<void> => {
-	configureEnvironment(true);
-
-	state.model = await AutoModel.from_pretrained(FALLBACK_MODEL_ID);
-
-	state.processor = await AutoProcessor.from_pretrained(FALLBACK_MODEL_ID, {
-		config: {
-			...PROCESSOR_CONFIG,
+			...PROCESSOR_CONFIG_BASE,
 			do_pad: false,
 			image_std: [1, 1, 1] as [number, number, number],
 		},
 	});
-};
-
-const initializeWebGPU = async (): Promise<boolean> => {
-	const gpu = (navigator as GPU).gpu;
-	if (!gpu) {
-		return false;
-	}
-
-	try {
-		const adapter = await gpu.requestAdapter();
-		if (!adapter) {
-			return false;
-		}
-
-		configureEnvironment(false);
-		await new Promise((resolve) => setTimeout(resolve, 100));
-
-		state.model = await AutoModel.from_pretrained(WEBGPU_MODEL_ID, {
-			device: "webgpu",
-		});
-		state.processor = await AutoProcessor.from_pretrained(WEBGPU_MODEL_ID);
-		state.isWebGPUSupported = true;
-		return true;
-	} catch (error) {
-		console.error("WebGPU initialization failed:", error);
-		return false;
-	}
+	progressCallback?.(1.0, "Model loaded");
 };
 
 export async function initializeModel(forceModelId?: string): Promise<boolean> {
 	try {
 		if (state.isIOS) {
-			console.log("iOS detected, using RMBG-1.4 model");
 			await loadIOSModel();
-			state.currentModelId = FALLBACK_MODEL_ID;
+			state.currentModelId = getDefaultModel().id;
 			return true;
 		}
 
-		const selectedModelId = forceModelId || FALLBACK_MODEL_ID;
+		const selectedModelId = forceModelId || getDefaultModel().id;
+		const modelConfig = MODELS.find((m) => m.id === selectedModelId);
 
-		if (selectedModelId === WEBGPU_MODEL_ID) {
-			const webGPUSuccess = await initializeWebGPU();
-			if (webGPUSuccess) {
-				state.currentModelId = WEBGPU_MODEL_ID;
-				return true;
+		if (!modelConfig) {
+			throw new Error(`Model ${selectedModelId} not found`);
+		}
+
+		if (modelConfig.requiresWebGPU && modelConfig.device === "webgpu") {
+			const defaultModel = getDefaultModel();
+			if (!state.model || state.currentModelId !== defaultModel.id) {
+				const defaultConfig = MODELS.find((m) => m.id === defaultModel.id);
+				if (defaultConfig) {
+					await loadModel(defaultConfig);
+					try {
+						const dummyProcessor = state.processor;
+						if (dummyProcessor) {
+							const dummyCanvas = document.createElement("canvas");
+							dummyCanvas.width = 1;
+							dummyCanvas.height = 1;
+							const dummyImage = await RawImage.fromURL(
+								dummyCanvas.toDataURL(),
+							);
+							await dummyProcessor(dummyImage);
+						}
+					} catch {}
+				}
 			}
 		}
 
-		await loadFallbackModel();
-		state.currentModelId = FALLBACK_MODEL_ID;
+		await loadModel(modelConfig);
+		state.currentModelId = selectedModelId;
 
 		if (!state.model || !state.processor) {
 			throw new Error("Failed to initialize model or processor");
@@ -171,9 +317,9 @@ export async function initializeModel(forceModelId?: string): Promise<boolean> {
 		return true;
 	} catch (error) {
 		console.error("Error initializing model:", error);
-		if (forceModelId === WEBGPU_MODEL_ID) {
-			console.log("Falling back to cross-browser model...");
-			return initializeModel(FALLBACK_MODEL_ID);
+		const defaultModel = getDefaultModel();
+		if (forceModelId && forceModelId !== defaultModel.id) {
+			return initializeModel(defaultModel.id);
 		}
 		throw new Error(
 			error instanceof Error
@@ -222,6 +368,12 @@ export async function processImage(image: File): Promise<File> {
 		throw new Error("Model not initialized. Call initializeModel() first.");
 	}
 
+	const modelConfig = MODELS.find((m) => m.id === state.currentModelId);
+	const modelName = modelConfig?.name || state.currentModelId;
+	console.log(
+		`[BackgroundRemoval] Processing image with model: ${modelName} (${state.currentModelId})`,
+	);
+
 	const imageUrl = URL.createObjectURL(image);
 	const img = await RawImage.fromURL(imageUrl);
 
@@ -250,9 +402,15 @@ export async function processImage(image: File): Promise<File> {
 			}, "image/png");
 		});
 
+		console.log(
+			`[BackgroundRemoval] Image processing complete with model: ${modelName}`,
+		);
 		return createProcessedFile(blob, image.name);
 	} catch (error) {
-		console.error("Error processing image:", error);
+		console.error(
+			`[BackgroundRemoval] Error processing image with model ${modelName}:`,
+			error,
+		);
 		throw new Error(
 			error instanceof Error ? error.message : "Failed to process image",
 		);
