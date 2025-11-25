@@ -6,6 +6,7 @@ import {
 	type Processor,
 	RawImage,
 } from "@huggingface/transformers";
+import { track } from "@vercel/analytics/react";
 
 export interface ProcessorConfig {
 	revision?: string;
@@ -378,11 +379,15 @@ export async function processImage(image: File): Promise<File> {
 	const img = await RawImage.fromURL(imageUrl);
 
 	try {
+		track("processImage", {
+			model: modelName,
+		});
+
 		const { pixel_values } = await state.processor(img);
 		const { output } = await state.model({ input: pixel_values });
 
 		const maskTensor = output[0].mul(255).to("uint8");
-		const maskImage = await RawImage.fromTensor(maskTensor);
+		const maskImage = RawImage.fromTensor(maskTensor);
 		const resizedMask = await maskImage.resize(img.width, img.height);
 		const maskData = resizedMask.data;
 
