@@ -3,7 +3,7 @@ import type {
 	Processor,
 	RawImage,
 } from "@huggingface/transformers";
-import { track } from "@vercel/analytics";
+import { event } from "onedollarstats";
 
 let transformersModule: typeof import("@huggingface/transformers") | null =
 	null;
@@ -394,7 +394,7 @@ export async function processImage(image: File): Promise<File> {
 	const img = await RawImage.fromURL(imageUrl);
 
 	try {
-		track("processImage", {
+		event("processImage", {
 			model: modelName,
 		});
 

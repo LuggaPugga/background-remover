@@ -4,7 +4,7 @@ import {
 	Outlet,
 	Scripts,
 } from "@tanstack/solid-router";
-import { inject } from "@vercel/analytics";
+import { configure } from "onedollarstats";
 import type * as Solid from "solid-js";
 import { HydrationScript } from "solid-js/web";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -99,4 +99,4 @@ function RootDocument({ children }: { children: Solid.JSX.Element }) {
 	);
 }
 
-inject();
+configure();
