@@ -33,11 +33,14 @@ export function ImageEditor(props: ImageEditorProps) {
 	const [imageSize, setImageSize] = createSignal({ width: 0, height: 0 });
 
 	createEffect(() => {
+		const imageSrc = props.processedImage || props.originalImage;
+		if (!imageSrc) return;
+
 		const img = new Image();
+		img.src = imageSrc;
 		img.onload = () => {
 			setImageSize({ width: img.naturalWidth, height: img.naturalHeight });
 		};
-		img.src = props.processedImage || props.originalImage;
 	});
 
 	const handleDownload = () => {
@@ -191,7 +194,11 @@ export function ImageEditor(props: ImageEditorProps) {
 							<div class="flex gap-2">
 								<Select<DownloadFormat>
 									value={downloadFormat()}
-									onChange={(value) => value && setDownloadFormat(value)}
+									onChange={(value) => {
+										if (value !== null) {
+											setDownloadFormat(value);
+										}
+									}}
 									options={FORMAT_OPTIONS}
 									optionValue={(v) => v}
 									optionTextValue={(v) => v.toUpperCase()}
@@ -203,9 +210,7 @@ export function ImageEditor(props: ImageEditorProps) {
 								>
 									<SelectTrigger class="h-11 w-full">
 										<SelectValue<DownloadFormat>>
-											{(state) =>
-												state.selectedOption()?.toUpperCase() || "PNG"
-											}
+											{() => downloadFormat().toUpperCase()}
 										</SelectValue>
 									</SelectTrigger>
 									<SelectContent />

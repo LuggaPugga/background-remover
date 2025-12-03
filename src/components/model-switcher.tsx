@@ -1,4 +1,4 @@
-import { createSignal, onMount, Show } from "solid-js";
+import { createSignal, onCleanup, onMount, Show } from "solid-js";
 import {
 	checkWebGPUAvailability,
 	clearProgressCallback,
@@ -46,6 +46,10 @@ export function ModelSwitcher(props: ModelSwitcherProps) {
 		setSelectedModel(modelInfo.currentModelId);
 		const available = await checkWebGPUAvailability();
 		setIsWebGPUAvailable(available);
+	});
+
+	onCleanup(() => {
+		setIsMounted(false);
 	});
 
 	const handleModelChange = async (model: ModelConfig | null) => {

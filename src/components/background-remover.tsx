@@ -29,6 +29,7 @@ export function BackgroundRemover() {
 	const [error, setError] = createSignal<string | null>(null);
 	const [originalFile, setOriginalFile] = createSignal<File | null>(null);
 	let fileInputRef: HTMLInputElement | undefined;
+	let loadingClearTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
 	onMount(() => {
 		const init = async () => {
@@ -59,17 +60,10 @@ export function BackgroundRemover() {
 						? err.message
 						: "Failed to initialize background removal model",
 				);
-			} finally {
-				setIsModelLoading(false);
-
-				setTimeout(() => {
-					if (!isModelLoading() && !isModelSwitching()) {
-						setLoadingStatus("");
-						setLoadingProgress(0);
-						setLoadingModelName(undefined);
-					}
-				}, 1000);
-			}
+		} finally {
+			setIsModelLoading(false);
+			scheduleClearLoadingState();
+		}
 		};
 
 		init();
@@ -77,7 +71,24 @@ export function BackgroundRemover() {
 
 	onCleanup(() => {
 		clearProgressCallback();
+		if (loadingClearTimeoutId) {
+			clearTimeout(loadingClearTimeoutId);
+		}
 	});
+
+	const scheduleClearLoadingState = () => {
+		if (loadingClearTimeoutId) {
+			clearTimeout(loadingClearTimeoutId);
+		}
+		loadingClearTimeoutId = setTimeout(() => {
+			if (!isModelLoading() && !isModelSwitching()) {
+				setLoadingStatus("");
+				setLoadingProgress(0);
+				setLoadingModelName(undefined);
+			}
+			loadingClearTimeoutId = undefined;
+		}, 1000);
+	};
 
 	const handleFile = (file: File) => {
 		const reader = new FileReader();
@@ -200,46 +211,40 @@ export function BackgroundRemover() {
 											setLoadingProgress(prog);
 											setLoadingStatus(stat);
 										});
-										setTimeout(() => {
-											if (!isModelLoading() && !isModelSwitching()) {
-												setLoadingStatus("");
-												setLoadingProgress(0);
-												setLoadingModelName(undefined);
-											}
-										}, 1000);
+										scheduleClearLoadingState();
 									}
 								}}
 							/>
 						</div>
 					</div>
-					<Show
-						when={originalImage()}
-						fallback={
-							<UploadDropzone
-								ref={(el) => {
-									fileInputRef = el;
-								}}
-								onFileSelect={handleFile}
-								isDragging={isDragging()}
-								onDragOver={handleDragOver}
-								onDragLeave={handleDragLeave}
-								onDrop={handleDrop}
-								onKeyDown={handleDropZoneKeyDown}
-								disabled={isModelLoading()}
-							/>
-						}
-					>
-						{(img) => (
-							<ImageEditor
-								originalImage={img()}
-								processedImage={processedImage()}
-								isProcessing={isProcessing()}
-								onProcess={processImage}
-								onReset={reset}
-								isModelLoading={isModelLoading()}
-							/>
-						)}
-					</Show>
+				<Show
+					when={originalImage()}
+					fallback={
+						<UploadDropzone
+							ref={(el) => {
+								fileInputRef = el;
+							}}
+							onFileSelect={handleFile}
+							isDragging={isDragging()}
+							onDragOver={handleDragOver}
+							onDragLeave={handleDragLeave}
+							onDrop={handleDrop}
+							onKeyDown={handleDropZoneKeyDown}
+							disabled={isModelLoading()}
+						/>
+					}
+				>
+					{(img) => (
+						<ImageEditor
+							originalImage={img}
+							processedImage={processedImage()}
+							isProcessing={isProcessing()}
+							onProcess={processImage}
+							onReset={reset}
+							isModelLoading={isModelLoading()}
+						/>
+					)}
+				</Show>
 				</div>
 			</main>
 		</div>
