@@ -13,7 +13,7 @@ export function ImageComparison({
 	isProcessing,
 }: ImageComparisonProps) {
 	return (
-		<div className="grid gap-6 md:grid-cols-2">
+		<div class="grid gap-6 md:grid-cols-2">
 			<ImagePreview src={originalImage} alt="Original" label="Original" />
 			<ProcessedImagePreview
 				processedImage={processedImage}

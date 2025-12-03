@@ -1,5 +1,5 @@
-import { Download, Sparkles, Upload } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Download, Sparkles, Upload } from "lucide-solid";
+import { createEffect, createSignal, Show } from "solid-js";
 import { cn } from "@/lib/utils";
 import { BackgroundColorPicker } from "./background-color-picker";
 import { Button } from "./ui/button";
@@ -20,34 +20,30 @@ interface ImageEditorProps {
 	isModelLoading: boolean;
 }
 
-export function ImageEditor({
-	originalImage,
-	processedImage,
-	isProcessing,
-	onProcess,
-	onReset,
-	isModelLoading,
-}: ImageEditorProps) {
-	const [backgroundColor, setBackgroundColor] = useState("transparent");
-	const [showOriginal, setShowOriginal] = useState(false);
-	const [downloadFormat, setDownloadFormat] = useState<
-		"png" | "webp" | "avif" | "gif"
-	>("png");
-	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+type DownloadFormat = "png" | "webp" | "avif" | "gif";
 
-	useEffect(() => {
+const FORMAT_OPTIONS: DownloadFormat[] = ["png", "webp", "avif", "gif"];
+
+export function ImageEditor(props: ImageEditorProps) {
+	const [backgroundColor, setBackgroundColor] = createSignal("transparent");
+	const [showOriginal, setShowOriginal] = createSignal(false);
+	const [downloadFormat, setDownloadFormat] =
+		createSignal<DownloadFormat>("png");
+	let canvasRef: HTMLCanvasElement | undefined;
+	const [imageSize, setImageSize] = createSignal({ width: 0, height: 0 });
+
+	createEffect(() => {
 		const img = new Image();
 		img.onload = () => {
 			setImageSize({ width: img.naturalWidth, height: img.naturalHeight });
 		};
-		img.src = processedImage || originalImage;
-	}, [processedImage, originalImage]);
+		img.src = props.processedImage || props.originalImage;
+	});
 
 	const handleDownload = () => {
-		if (!processedImage || !canvasRef.current) return;
+		if (!props.processedImage || !canvasRef) return;
 
-		const canvas = canvasRef.current;
+		const canvas = canvasRef;
 		const ctx = canvas.getContext("2d");
 		if (!ctx) return;
 
@@ -56,25 +52,23 @@ export function ImageEditor({
 			canvas.width = img.naturalWidth;
 			canvas.height = img.naturalHeight;
 
-			if (backgroundColor !== "transparent") {
-				ctx.fillStyle = backgroundColor;
+			if (backgroundColor() !== "transparent") {
+				ctx.fillStyle = backgroundColor();
 				ctx.fillRect(0, 0, canvas.width, canvas.height);
 			}
 
 			ctx.drawImage(img, 0, 0);
 
-			const mimeTypes: Record<typeof downloadFormat, string> = {
+			const mimeTypes: Record<DownloadFormat, string> = {
 				png: "image/png",
 				webp: "image/webp",
 				avif: "image/avif",
 				gif: "image/gif",
 			};
 
-			const mimeType = mimeTypes[downloadFormat];
-			const quality =
-				downloadFormat === "webp" || downloadFormat === "avif"
-					? 0.92
-					: undefined;
+			const format = downloadFormat();
+			const mimeType = mimeTypes[format];
+			const quality = format === "webp" || format === "avif" ? 0.92 : undefined;
 
 			canvas.toBlob(
 				(blob) => {
@@ -82,7 +76,7 @@ export function ImageEditor({
 					const url = URL.createObjectURL(blob);
 					const link = document.createElement("a");
 					link.href = url;
-					link.download = `background-removed-${Date.now()}.${downloadFormat}`;
+					link.download = `background-removed-${Date.now()}.${format}`;
 					link.click();
 					URL.revokeObjectURL(url);
 				},
@@ -90,142 +84,152 @@ export function ImageEditor({
 				quality,
 			);
 		};
-		img.src = processedImage;
+		img.src = props.processedImage;
 	};
 
-	const displayImage = showOriginal
-		? originalImage
-		: processedImage || originalImage;
-	const showProcessButton = !processedImage && !isProcessing;
+	const displayImage = () =>
+		showOriginal()
+			? props.originalImage
+			: props.processedImage || props.originalImage;
 
 	return (
-		<div className="space-y-6">
-			<div className="relative overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+		<div class="space-y-6">
+			<div class="relative overflow-hidden rounded-xl border border-border bg-card shadow-lg">
 				<div
-					className={cn(
+					class={cn(
 						"relative flex min-h-[400px] items-center justify-center p-8 transition-colors",
-						backgroundColor === "transparent" ? "bg-checkered" : "",
+						backgroundColor() === "transparent" ? "bg-checkered" : "",
 					)}
 					style={{
-						backgroundColor:
-							backgroundColor !== "transparent" ? backgroundColor : undefined,
+						"background-color":
+							backgroundColor() !== "transparent"
+								? backgroundColor()
+								: undefined,
 					}}
 				>
-					{isProcessing ? (
-						<div className="flex flex-col items-center gap-4">
-							<div className="relative">
-								<div className="h-16 w-16 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
-								<Sparkles className="absolute inset-0 m-auto h-6 w-6 text-primary animate-pulse" />
+					<Show
+						when={!props.isProcessing}
+						fallback={
+							<div class="flex flex-col items-center gap-4">
+								<div class="relative">
+									<div class="h-16 w-16 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+									<Sparkles class="absolute inset-0 m-auto h-6 w-6 text-primary animate-pulse" />
+								</div>
+								<div class="text-center">
+									<p class="text-lg font-medium">Removing background...</p>
+									<p class="text-sm text-muted-foreground">
+										This may take a few moments
+									</p>
+								</div>
 							</div>
-							<div className="text-center">
-								<p className="text-lg font-medium">Removing background...</p>
-								<p className="text-sm text-muted-foreground">
-									This may take a few moments
-								</p>
-							</div>
-						</div>
-					) : (
-						<div className="relative max-h-[600px] w-full">
+						}
+					>
+						<div class="relative max-h-[600px] w-full">
 							<img
-								src={displayImage}
-								alt={showOriginal ? "Original" : "Processed"}
-								className="mx-auto h-auto max-h-[600px] w-auto max-w-full rounded-lg object-contain"
+								src={displayImage()}
+								alt={showOriginal() ? "Original" : "Processed"}
+								class="mx-auto h-auto max-h-[600px] w-auto max-w-full rounded-lg object-contain"
 							/>
-							{processedImage && (
-								<div className="absolute bottom-4 left-4 right-4 flex justify-center gap-2">
+							<Show when={props.processedImage}>
+								<div class="absolute bottom-4 left-4 right-4 flex justify-center gap-2">
 									<Button
 										size="sm"
-										variant={showOriginal ? "outline" : "secondary"}
+										variant={showOriginal() ? "outline" : "secondary"}
 										onMouseDown={() => setShowOriginal(true)}
 										onMouseUp={() => setShowOriginal(false)}
 										onMouseLeave={() => setShowOriginal(false)}
 										onTouchStart={() => setShowOriginal(true)}
 										onTouchEnd={() => setShowOriginal(false)}
-										className="shadow-lg backdrop-blur-sm"
+										class="shadow-lg backdrop-blur-sm"
 									>
-										{showOriginal ? "Showing Original" : "Hold to Compare"}
+										{showOriginal() ? "Showing Original" : "Hold to Compare"}
 									</Button>
 								</div>
-							)}
+							</Show>
 						</div>
-					)}
+					</Show>
 				</div>
 
-				{!isProcessing && imageSize.width > 0 && (
-					<div className="border-t border-border bg-muted/30 px-4 py-2">
-						<div className="flex items-center justify-between text-xs text-muted-foreground">
+				<Show when={!props.isProcessing && imageSize().width > 0}>
+					<div class="border-t border-border bg-muted/30 px-4 py-2">
+						<div class="flex items-center justify-between text-xs text-muted-foreground">
 							<span>
-								{imageSize.width} × {imageSize.height} px
+								{imageSize().width} × {imageSize().height} px
 							</span>
 							<span>
-								{processedImage ? "Background Removed" : "Original Image"}
+								{props.processedImage ? "Background Removed" : "Original Image"}
 							</span>
 						</div>
 					</div>
-				)}
+				</Show>
 			</div>
 
-			<div className="grid gap-6 md:grid-cols-2">
-				<div className="flex flex-col rounded-lg border border-border bg-card p-4">
+			<div class="grid gap-6 md:grid-cols-2">
+				<div class="flex flex-col rounded-lg border border-border bg-card p-4">
 					<BackgroundColorPicker
-						selectedColor={backgroundColor}
+						selectedColor={backgroundColor()}
 						onColorChange={setBackgroundColor}
-						disabled={!processedImage || isProcessing}
+						disabled={!props.processedImage || props.isProcessing}
 					/>
 				</div>
 
-				<div className="flex flex-col rounded-lg border border-border bg-card p-4">
-					<h3 className="mb-3 text-sm font-medium">Actions</h3>
-					<div className="flex flex-1 flex-col justify-center space-y-2">
-						{showProcessButton && (
+				<div class="flex flex-col rounded-lg border border-border bg-card p-4">
+					<h3 class="mb-3 text-sm font-medium">Actions</h3>
+					<div class="flex flex-1 flex-col justify-center space-y-2">
+						<Show when={!props.processedImage && !props.isProcessing}>
 							<Button
 								size="lg"
-								onClick={onProcess}
-								disabled={isModelLoading}
-								className="w-full"
+								onClick={props.onProcess}
+								disabled={props.isModelLoading}
+								class="w-full"
 							>
-								<Sparkles className="mr-2 h-4 w-4" />
+								<Sparkles class="mr-2 h-4 w-4" />
 								Remove Background
 							</Button>
-						)}
-						{processedImage && (
-							<div className="flex gap-2">
-								<Select
-									value={downloadFormat}
-									onValueChange={(value: "png" | "webp" | "avif" | "gif") =>
-										setDownloadFormat(value)
-									}
+						</Show>
+						<Show when={props.processedImage}>
+							<div class="flex gap-2">
+								<Select<DownloadFormat>
+									value={downloadFormat()}
+									onChange={(value) => value && setDownloadFormat(value)}
+									options={FORMAT_OPTIONS}
+									optionValue={(v) => v}
+									optionTextValue={(v) => v.toUpperCase()}
+									itemComponent={(itemProps) => (
+										<SelectItem item={itemProps.item}>
+											{itemProps.item.rawValue.toUpperCase()}
+										</SelectItem>
+									)}
 								>
-									<SelectTrigger className="h-11 w-full">
-										<SelectValue />
+									<SelectTrigger class="h-11 w-full">
+										<SelectValue<DownloadFormat>>
+											{(state) =>
+												state.selectedOption()?.toUpperCase() || "PNG"
+											}
+										</SelectValue>
 									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="png">PNG</SelectItem>
-										<SelectItem value="webp">WebP</SelectItem>
-										<SelectItem value="avif">AVIF</SelectItem>
-										<SelectItem value="gif">GIF</SelectItem>
-									</SelectContent>
+									<SelectContent />
 								</Select>
-								<Button size="lg" onClick={handleDownload} className="shrink-0">
-									<Download className="mr-2 h-4 w-4" />
+								<Button size="lg" onClick={handleDownload} class="shrink-0">
+									<Download class="mr-2 h-4 w-4" />
 									Download
 								</Button>
 							</div>
-						)}
+						</Show>
 						<Button
 							size="lg"
 							variant="outline"
-							onClick={onReset}
-							className="w-full"
+							onClick={props.onReset}
+							class="w-full"
 						>
-							<Upload className="mr-2 h-4 w-4" />
+							<Upload class="mr-2 h-4 w-4" />
 							Upload New Image
 						</Button>
 					</div>
 				</div>
 			</div>
 
-			<canvas ref={canvasRef} className="hidden" />
+			<canvas ref={canvasRef} class="hidden" />
 		</div>
 	);
 }

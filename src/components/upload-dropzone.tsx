@@ -1,96 +1,85 @@
-import { ImageIcon, Upload } from "lucide-react";
-import type React from "react";
-import { forwardRef } from "react";
+import { ImageIcon, Upload } from "lucide-solid";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface UploadDropzoneProps {
 	onFileSelect: (file: File) => void;
 	isDragging: boolean;
-	onDragOver: (e: React.DragEvent) => void;
-	onDragLeave: (e: React.DragEvent) => void;
-	onDrop: (e: React.DragEvent) => void;
-	onKeyDown: (e: React.KeyboardEvent) => void;
+	onDragOver: (e: DragEvent) => void;
+	onDragLeave: (e: DragEvent) => void;
+	onDrop: (e: DragEvent) => void;
+	onKeyDown: (e: KeyboardEvent) => void;
 	disabled?: boolean;
+	ref?: (el: HTMLInputElement) => void;
 }
 
-export const UploadDropzone = forwardRef<HTMLInputElement, UploadDropzoneProps>(
-	(
-		{
-			onFileSelect,
-			isDragging,
-			onDragOver,
-			onDragLeave,
-			onDrop,
-			onKeyDown,
-			disabled = false,
-		},
-		ref,
-	) => {
-		const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-			const file = e.target.files?.[0];
-			if (file) {
-				onFileSelect(file);
-			}
-		};
+export function UploadDropzone(props: UploadDropzoneProps) {
+	let fileInputRef: HTMLInputElement | undefined;
 
-		return (
-			<section
-				onDragOver={onDragOver}
-				onDragLeave={onDragLeave}
-				onDrop={onDrop}
-				onClick={() => {
-					if (ref && typeof ref !== "function" && ref.current) {
-						ref.current.click();
-					}
-				}}
-				onKeyDown={onKeyDown}
-				aria-label="Upload image by dragging and dropping or clicking"
-				className={cn(
-					"relative flex min-h-[400px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors",
-					isDragging
-						? "border-foreground bg-accent"
-						: "border-border bg-card hover:border-muted-foreground/50",
-					disabled && "opacity-50 cursor-not-allowed",
-				)}
-			>
-				<div className="flex flex-col items-center gap-4 p-8 text-center">
-					<div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-						<Upload className="h-8 w-8 text-muted-foreground" />
-					</div>
-					<div>
-						<h3 className="mb-2 text-xl font-medium">
-							{isDragging ? "Drop your image here" : "Upload an image"}
-						</h3>
-						<p className="text-sm text-muted-foreground">
-							Drag and drop or click to browse
-						</p>
-					</div>
-					<Button
-						size="lg"
-						onClick={(e) => {
-							e.stopPropagation();
-							if (ref && typeof ref !== "function" && ref.current) {
-								ref.current.click();
-							}
-						}}
-						disabled={disabled}
-						className="mt-2"
-					>
-						<ImageIcon className="mr-2 h-4 w-4" />
-						Select Image
-					</Button>
+	const handleFileInput = (e: Event & { currentTarget: HTMLInputElement }) => {
+		const file = e.currentTarget.files?.[0];
+		if (file) {
+			props.onFileSelect(file);
+		}
+	};
+
+	return (
+		<section
+			onDragOver={props.onDragOver}
+			onDragLeave={props.onDragLeave}
+			onDrop={props.onDrop}
+			onClick={() => {
+				if (fileInputRef) {
+					fileInputRef.click();
+				}
+			}}
+			onKeyDown={props.onKeyDown}
+			aria-label="Upload image by dragging and dropping or clicking"
+			class={cn(
+				"relative flex min-h-[400px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors",
+				props.isDragging
+					? "border-foreground bg-accent"
+					: "border-border bg-card hover:border-muted-foreground/50",
+				props.disabled && "opacity-50 cursor-not-allowed",
+			)}
+		>
+			<div class="flex flex-col items-center gap-4 p-8 text-center">
+				<div class="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+					<Upload class="h-8 w-8 text-muted-foreground" />
 				</div>
-				<input
-					ref={ref}
-					type="file"
-					accept="image/*"
-					onChange={handleFileInput}
-					className="hidden"
-				/>
-			</section>
-		);
-	},
-);
-
-UploadDropzone.displayName = "UploadDropzone";
+				<div>
+					<h3 class="mb-2 text-xl font-medium">
+						{props.isDragging ? "Drop your image here" : "Upload an image"}
+					</h3>
+					<p class="text-sm text-muted-foreground">
+						Drag and drop or click to browse
+					</p>
+				</div>
+				<Button
+					size="lg"
+					onClick={(e) => {
+						e.stopPropagation();
+						if (fileInputRef) {
+							fileInputRef.click();
+						}
+					}}
+					disabled={props.disabled}
+					class="mt-2"
+				>
+					<ImageIcon class="mr-2 h-4 w-4" />
+					Select Image
+				</Button>
+			</div>
+			<input
+				ref={(el) => {
+					fileInputRef = el;
+					props.ref?.(el);
+				}}
+				type="file"
+				accept="image/*"
+				onChange={handleFileInput}
+				class="hidden"
+			/>
+		</section>
+	);
+}

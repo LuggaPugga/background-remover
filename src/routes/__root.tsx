@@ -1,5 +1,12 @@
-import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
-import { Analytics } from "@vercel/analytics/react";
+import {
+	createRootRoute,
+	HeadContent,
+	Outlet,
+	Scripts,
+} from "@tanstack/solid-router";
+import { inject } from "@vercel/analytics";
+import type * as Solid from "solid-js";
+import { HydrationScript } from "solid-js/web";
 import { ThemeProvider } from "@/components/theme-provider";
 import appCss from "../styles.css?url";
 
@@ -65,23 +72,31 @@ export const Route = createRootRoute({
 			},
 		],
 	}),
-
+	component: RootComponent,
 	shellComponent: RootDocument,
 });
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootComponent() {
+	return (
+		<ThemeProvider>
+			<Outlet />
+		</ThemeProvider>
+	);
+}
+
+function RootDocument({ children }: { children: Solid.JSX.Element }) {
 	return (
 		<html lang="en">
 			<head>
+				<HydrationScript />
 				<HeadContent />
-				<Analytics />
 			</head>
 			<body>
-				<ThemeProvider enableSystem attribute="class">
-					{children}
-				</ThemeProvider>
+				{children}
 				<Scripts />
 			</body>
 		</html>
 	);
 }
+
+inject();

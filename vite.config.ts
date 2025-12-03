@@ -1,38 +1,37 @@
-import { defineConfig } from 'vite'
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
-import viteReact from '@vitejs/plugin-react'
-import viteTsConfigPaths from 'vite-tsconfig-paths'
-import tailwindcss from '@tailwindcss/vite'
-import { nitro } from 'nitro/vite'
-import packageJson from './package.json' with { type: 'json' }
+import { defineConfig } from 'vite';
+import { tanstackStart } from '@tanstack/solid-start/plugin/vite';
+import viteSolid from 'vite-plugin-solid';
+import viteTsConfigPaths from 'vite-tsconfig-paths';
+import tailwindcss from '@tailwindcss/vite';
+import { nitro } from 'nitro/vite';
 
 const config = defineConfig(() => ({
-	server: {
-		headers: {
-		  'Cross-Origin-Opener-Policy': 'same-origin',
-		  'Cross-Origin-Embedder-Policy': 'require-corp',
-		},
-	  },
-  
-  resolve:
-    process.env.NODE_ENV === "production"
-      ? {
-          alias: {
-            "@huggingface/transformers":
-              `https://cdn.jsdelivr.net/npm/@huggingface/transformers@${packageJson.dependencies['@huggingface/transformers'].replace('^', '')}`,
-          },
-        }
-      : {},
-
+  server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp'
+    }
+  },
+  optimizeDeps: {
+    include: ['@huggingface/transformers']
+  },
+  ssr: {
+    external: ['@huggingface/transformers']
+  },
+  build: {
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true
+    }
+  },
   plugins: [
-    nitro({	}),
+    nitro({}),
     viteTsConfigPaths({
-      projects: ['./tsconfig.json'],
+      projects: ['./tsconfig.json']
     }),
     tailwindcss(),
     tanstackStart(),
-    viteReact(),
-  ],
-}))
-
-export default config
+    viteSolid({ ssr: true })
+  ]
+}));
+export default config;
