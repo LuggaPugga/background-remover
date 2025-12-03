@@ -60,10 +60,10 @@ export function BackgroundRemover() {
 						? err.message
 						: "Failed to initialize background removal model",
 				);
-		} finally {
-			setIsModelLoading(false);
-			scheduleClearLoadingState();
-		}
+			} finally {
+				setIsModelLoading(false);
+				scheduleClearLoadingState();
+			}
 		};
 
 		init();
@@ -217,34 +217,34 @@ export function BackgroundRemover() {
 							/>
 						</div>
 					</div>
-				<Show
-					when={originalImage()}
-					fallback={
-						<UploadDropzone
-							ref={(el) => {
-								fileInputRef = el;
-							}}
-							onFileSelect={handleFile}
-							isDragging={isDragging()}
-							onDragOver={handleDragOver}
-							onDragLeave={handleDragLeave}
-							onDrop={handleDrop}
-							onKeyDown={handleDropZoneKeyDown}
-							disabled={isModelLoading()}
-						/>
-					}
-				>
-					{(img) => (
-						<ImageEditor
-							originalImage={img}
-							processedImage={processedImage()}
-							isProcessing={isProcessing()}
-							onProcess={processImage}
-							onReset={reset}
-							isModelLoading={isModelLoading()}
-						/>
-					)}
-				</Show>
+					<Show
+						when={originalImage()}
+						fallback={
+							<UploadDropzone
+								ref={(el) => {
+									fileInputRef = el;
+								}}
+								onFileSelect={handleFile}
+								isDragging={isDragging()}
+								onDragOver={handleDragOver}
+								onDragLeave={handleDragLeave}
+								onDrop={handleDrop}
+								onKeyDown={handleDropZoneKeyDown}
+								disabled={isModelLoading()}
+							/>
+						}
+					>
+						{(img) => (
+							<ImageEditor
+								originalImage={img}
+								processedImage={processedImage()}
+								isProcessing={isProcessing()}
+								onProcess={processImage}
+								onReset={reset}
+								isModelLoading={isModelLoading()}
+							/>
+						)}
+					</Show>
 				</div>
 			</main>
 		</div>
