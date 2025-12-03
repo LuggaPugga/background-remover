@@ -25,4 +25,4 @@ bun run build
 
 ## Tech Stack
 
-Built with TanStack Start, React, and Hugging Face Transformers. Uses Tailwind CSS for styling and Biome for linting and formatting.
+Built with TanStack Start, SolidJS, and Hugging Face Transformers. Uses Tailwind CSS for styling and Biome for linting and formatting.
