@@ -1,5 +1,4 @@
 import { Github, Moon, Sparkles, Sun } from "lucide-solid";
-import { Show } from "solid-js";
 import { useTheme } from "./theme-provider";
 import { Button } from "./ui/button";
 
@@ -18,18 +17,17 @@ function ThemeToggle() {
 	};
 
 	return (
-		<button
-			type="button"
+		<Button
+			variant="ghost"
+			size="icon"
 			onClick={toggleTheme}
-			class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 size-9"
+			aria-label="Toggle theme"
 		>
-			<Show
-				when={resolvedTheme() === "dark"}
-				fallback={<Moon class="h-4 w-4" />}
-			>
-				<Sun class="h-4 w-4" />
-			</Show>
-		</button>
+			<div class="relative size-4">
+				<Moon class="size-4 absolute left-0 top-0 dark:opacity-0 not-dark:opacity-100" />
+				<Sun class="size-4 absolute left-0 top-0 dark:opacity-100 not-dark:opacity-0" />
+			</div>
+		</Button>
 	);
 }
 
@@ -42,6 +40,7 @@ export function Header() {
 						variant="ghost"
 						class="py-6"
 						onClick={() => window.location.reload()}
+						aria-label="Start over"
 					>
 						<div class="flex size-8 items-center justify-center rounded-md bg-foreground">
 							<Sparkles class="h-4 w-4 text-background" />
