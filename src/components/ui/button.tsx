@@ -1,7 +1,10 @@
-import { Button as KobalteButton } from "@kobalte/core/button";
-import { cva, type VariantProps } from "class-variance-authority";
-import type { JSX } from "solid-js";
-
+import type { ButtonRootProps } from "@kobalte/core/button";
+import { Button as ButtonPrimitive } from "@kobalte/core/button";
+import type { PolymorphicProps } from "@kobalte/core/polymorphic";
+import type { VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
+import type { ValidComponent } from "solid-js";
+import { splitProps } from "solid-js";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
@@ -36,30 +39,30 @@ const buttonVariants = cva(
 	},
 );
 
-export interface ButtonProps
-	extends VariantProps<typeof buttonVariants>,
-		JSX.ButtonHTMLAttributes<HTMLButtonElement> {
-	asChild?: boolean;
-}
+type buttonProps<T extends ValidComponent = "button"> = ButtonRootProps<T> &
+	VariantProps<typeof buttonVariants> & {
+		class?: string;
+	};
 
-function Button(props: ButtonProps) {
-	const { class: className, variant, size, asChild, children, ...rest } = props;
-
-	if (asChild) {
-		console.warn(
-			"asChild prop is not fully supported in SolidJS. Consider styling the child element directly.",
-		);
-	}
+export const Button = <T extends ValidComponent = "button">(
+	props: PolymorphicProps<T, buttonProps<T>>,
+) => {
+	const [local, rest] = splitProps(props as buttonProps, [
+		"class",
+		"variant",
+		"size",
+	]);
 
 	return (
-		<KobalteButton
-			data-slot="button"
-			class={cn(buttonVariants({ variant, size, className }))}
+		<ButtonPrimitive
+			class={cn(
+				buttonVariants({
+					size: local.size,
+					variant: local.variant,
+				}),
+				local.class,
+			)}
 			{...rest}
-		>
-			{children}
-		</KobalteButton>
+		/>
 	);
-}
-
-export { Button, buttonVariants };
+};
