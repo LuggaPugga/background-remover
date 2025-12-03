@@ -18,7 +18,6 @@
     "@solid-primitives/media": "^2.3.3",
     "@solid-primitives/storage": "^4.3.3",
     "@tailwindcss/vite": "^4.1.17",
-    "@tanstack/nitro-v2-vite-plugin": "^1.139.0",
     "@tanstack/router-plugin": "^1.139.14",
     "@tanstack/solid-router": "^1.139.14",
     "@tanstack/solid-start": "^1.139.14",
