@@ -25,7 +25,9 @@ const config = defineConfig(() => ({
     }
   },
   plugins: [
-    nitro({}),
+    nitro({
+      compressPublicAssets: true,
+    }),
     viteTsConfigPaths({
       projects: ['./tsconfig.json']
     }),
