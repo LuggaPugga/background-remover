@@ -48,9 +48,9 @@ export function UploadDropzone(props: UploadDropzoneProps) {
 					<Upload class="h-8 w-8 text-muted-foreground" />
 				</div>
 				<div>
-					<h3 class="mb-2 text-xl font-medium">
+					<h2 class="mb-2 text-xl font-medium">
 						{props.isDragging ? "Drop your image here" : "Upload an image"}
-					</h3>
+					</h2>
 					<p class="text-sm text-muted-foreground">
 						Drag and drop or click to browse
 					</p>
