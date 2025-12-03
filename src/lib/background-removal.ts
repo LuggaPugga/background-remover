@@ -1,12 +1,18 @@
-import {
-	AutoModel,
-	AutoProcessor,
-	env,
-	type PreTrainedModel,
-	type Processor,
+import type {
+	PreTrainedModel,
+	Processor,
 	RawImage,
 } from "@huggingface/transformers";
-import { track } from "@vercel/analytics/react";
+import { track } from "@vercel/analytics";
+
+let transformersModule: typeof import("@huggingface/transformers") | null =
+	null;
+
+async function getTransformers() {
+	if (transformersModule) return transformersModule;
+	transformersModule = await import("@huggingface/transformers");
+	return transformersModule;
+}
 
 export interface ProcessorConfig {
 	revision?: string;
@@ -85,6 +91,9 @@ interface GPUAdapter {
 }
 
 const detectIOS = (): boolean => {
+	if (typeof window === "undefined" || typeof navigator === "undefined") {
+		return false;
+	}
 	const platform = navigator.platform;
 	const userAgent = navigator.userAgent;
 
@@ -140,7 +149,8 @@ export function clearProgressCallback(): void {
 	progressCallback = null;
 }
 
-const configureEnvironment = (useProxy: boolean): void => {
+const configureEnvironment = async (useProxy: boolean): Promise<void> => {
+	const { env } = await getTransformers();
 	env.allowLocalModels = false;
 	if (env.backends?.onnx?.wasm) {
 		env.backends.onnx.wasm.proxy = useProxy;
@@ -148,6 +158,8 @@ const configureEnvironment = (useProxy: boolean): void => {
 };
 
 const loadModel = async (modelConfig: ModelConfig): Promise<void> => {
+	const { AutoModel, AutoProcessor } = await getTransformers();
+
 	if (modelConfig.requiresWebGPU && modelConfig.device === "webgpu") {
 		const gpu = (navigator as GPU).gpu;
 		if (!gpu) {
@@ -160,7 +172,7 @@ const loadModel = async (modelConfig: ModelConfig): Promise<void> => {
 		}
 
 		progressCallback?.(0.1, "Initializing WebGPU...");
-		configureEnvironment(true);
+		await configureEnvironment(true);
 		await new Promise((resolve) => setTimeout(resolve, 200));
 
 		progressCallback?.(0.3, `Loading ${modelConfig.name} model...`);
@@ -185,7 +197,7 @@ const loadModel = async (modelConfig: ModelConfig): Promise<void> => {
 		state.isWebGPUSupported = true;
 		progressCallback?.(1.0, "Model loaded");
 	} else {
-		configureEnvironment(true);
+		await configureEnvironment(true);
 
 		const modelOptions: Record<string, unknown> = {};
 		if (modelConfig.dtype) {
@@ -241,8 +253,9 @@ const loadModel = async (modelConfig: ModelConfig): Promise<void> => {
 };
 
 const loadIOSModel = async (): Promise<void> => {
+	const { AutoModel, AutoProcessor } = await getTransformers();
 	const defaultModel = getDefaultModel();
-	configureEnvironment(true);
+	await configureEnvironment(true);
 
 	progressCallback?.(0.2, `Loading ${defaultModel.name} model...`);
 	state.model = await AutoModel.from_pretrained(defaultModel.id, {
@@ -273,6 +286,7 @@ const loadIOSModel = async (): Promise<void> => {
 
 export async function initializeModel(forceModelId?: string): Promise<boolean> {
 	try {
+		const { RawImage } = await getTransformers();
 		if (state.isIOS) {
 			await loadIOSModel();
 			state.currentModelId = getDefaultModel().id;
@@ -365,6 +379,7 @@ const createProcessedFile = (blob: Blob, originalFileName: string): File => {
 };
 
 export async function processImage(image: File): Promise<File> {
+	const { RawImage } = await getTransformers();
 	if (!state.model || !state.processor) {
 		throw new Error("Model not initialized. Call initializeModel() first.");
 	}
