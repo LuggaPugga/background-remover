@@ -236,7 +236,7 @@ export function BackgroundRemover() {
 					>
 						{(img) => (
 							<ImageEditor
-								originalImage={img}
+								originalImage={img()}
 								processedImage={processedImage()}
 								isProcessing={isProcessing()}
 								onProcess={processImage}
