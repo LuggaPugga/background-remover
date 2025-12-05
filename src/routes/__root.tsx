@@ -5,21 +5,23 @@ import {
 	Scripts,
 } from "@tanstack/solid-router";
 import { configure } from "onedollarstats";
-import type * as Solid from "solid-js";
-import { HydrationScript } from "solid-js/web";
-import { ThemeProvider } from "@/components/theme-provider";
+import type { JSX } from "solid-js";
+import { HydrationScript, isServer } from "solid-js/web";
+import {
+	getInitialThemeClass,
+	ThemeProvider,
+} from "@/components/theme-provider";
 import appCss from "../styles.css?url";
+
+if (!isServer) {
+	configure();
+}
 
 export const Route = createRootRoute({
 	head: () => ({
 		meta: [
-			{
-				charSet: "utf-8",
-			},
-			{
-				name: "viewport",
-				content: "width=device-width, initial-scale=1",
-			},
+			{ charSet: "utf-8" },
+			{ name: "viewport", content: "width=device-width, initial-scale=1" },
 			{
 				title:
 					"Free Background Remover - Remove Image Backgrounds Instantly Online",
@@ -72,21 +74,17 @@ export const Route = createRootRoute({
 			},
 		],
 	}),
-	component: RootComponent,
-	shellComponent: RootDocument,
-});
-
-function RootComponent() {
-	return (
+	component: () => (
 		<ThemeProvider>
 			<Outlet />
 		</ThemeProvider>
-	);
-}
+	),
+	shellComponent: RootDocument,
+});
 
-function RootDocument({ children }: { children: Solid.JSX.Element }) {
+function RootDocument({ children }: { children: JSX.Element }) {
 	return (
-		<html lang="en">
+		<html lang="en" class={getInitialThemeClass()}>
 			<head>
 				<HydrationScript />
 				<HeadContent />
@@ -98,5 +96,3 @@ function RootDocument({ children }: { children: Solid.JSX.Element }) {
 		</html>
 	);
 }
-
-configure();
