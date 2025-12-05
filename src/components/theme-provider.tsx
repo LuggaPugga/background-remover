@@ -35,52 +35,71 @@ interface ThemeProviderProps {
 	attribute?: string;
 }
 
+function getStoredTheme(storageKey: string, defaultTheme: Theme): Theme {
+	if (isServer) return defaultTheme;
+	try {
+		const stored = localStorage.getItem(storageKey);
+		if (stored === "light" || stored === "dark" || stored === "system") {
+			return stored;
+		}
+	} catch {}
+	return defaultTheme;
+}
+
+function resolveTheme(theme: Theme, prefersDark: boolean): "light" | "dark" {
+	return theme === "system" ? (prefersDark ? "dark" : "light") : theme;
+}
+
+function applyTheme(resolved: "light" | "dark", attribute: string) {
+	if (isServer) return;
+	const root = document.documentElement;
+	if (attribute === "class") {
+		root.classList.remove("light", "dark");
+		root.classList.add(resolved);
+	} else {
+		root.setAttribute(attribute, resolved);
+	}
+	root.style.colorScheme = resolved;
+}
+
 export function ThemeProvider(props: ThemeProviderProps) {
 	const storageKey = props.storageKey ?? "theme";
 	const defaultTheme = props.defaultTheme ?? "system";
+	const attribute = props.attribute ?? "class";
 
-	const [theme, setTheme] = createSignal<Theme>(defaultTheme);
-	const prefersDark = createPrefersDark(false);
+	const initialTheme = getStoredTheme(storageKey, defaultTheme);
+	const [theme, setThemeState] = createSignal<Theme>(initialTheme);
+	const prefersDark = createPrefersDark();
+
+	const resolvedTheme = createMemo<"light" | "dark">(() =>
+		resolveTheme(theme(), prefersDark()),
+	);
 
 	onMount(() => {
-		const stored = localStorage.getItem(storageKey) as Theme | null;
-		if (stored) {
-			setTheme(stored);
-		} else {
-			// If no stored theme, we might want to sync with what the script did
-			// But defaultTheme "system" + prefersDark should match the script logic
-			setTheme(defaultTheme);
+		const stored = getStoredTheme(storageKey, defaultTheme);
+		if (stored !== theme()) {
+			setThemeState(stored);
 		}
+		const resolved = resolveTheme(
+			stored,
+			window.matchMedia("(prefers-color-scheme: dark)").matches,
+		);
+		applyTheme(resolved, attribute);
 	});
-
-	const resolvedTheme = createMemo<"light" | "dark">(() => {
-		const current = theme();
-		if (current === "system") {
-			return prefersDark() ? "dark" : "light";
-		}
-		return current;
-	});
-
-	const applyTheme = (resolved: "light" | "dark") => {
-		if (isServer) return;
-		const root = document.documentElement;
-		root.classList.remove("light", "dark");
-		root.classList.add(resolved);
-		root.style.colorScheme = resolved;
-	};
 
 	createEffect(() => {
-		const current = theme();
 		const resolved = resolvedTheme();
-
-		// Persist to storage
+		applyTheme(resolved, attribute);
 		if (!isServer) {
-			localStorage.setItem(storageKey, current);
+			try {
+				localStorage.setItem(storageKey, theme());
+			} catch {}
 		}
-
-		// Apply to DOM
-		applyTheme(resolved);
 	});
+
+	const setTheme = (newTheme: Theme) => {
+		setThemeState(newTheme);
+	};
 
 	const value: ThemeContextValue = {
 		theme,
@@ -90,27 +109,7 @@ export function ThemeProvider(props: ThemeProviderProps) {
 
 	return (
 		<ThemeContext.Provider value={value}>
-			<ThemeScript storageKey={storageKey} defaultTheme={defaultTheme} />
 			{props.children}
 		</ThemeContext.Provider>
 	);
-}
-
-function ThemeScript(props: { storageKey: string; defaultTheme: Theme }) {
-	const script = `
-(function() {
-  var storageKey = ${JSON.stringify(props.storageKey)};
-  var defaultTheme = ${JSON.stringify(props.defaultTheme)};
-  var theme;
-  try { theme = localStorage.getItem(storageKey); } catch(e) {}
-  if (!theme) theme = defaultTheme;
-  var resolved = theme;
-  if (theme === 'system') {
-    resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  document.documentElement.classList.add(resolved);
-  document.documentElement.style.colorScheme = resolved;
-})();
-`;
-	return <script innerHTML={script} />;
 }
