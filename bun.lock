@@ -15,7 +15,7 @@
         "@tanstack/solid-start": "^1.139.14",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
-        "lucide-solid": "^0.554.0",
+        "lucide-solid": "^0.562.0",
         "nitro": "^3.0.1-alpha.1",
         "onedollarstats": "^0.0.11",
         "solid-js": "^1.9.10",
@@ -768,7 +768,7 @@
 
     "lru-cache": ["lru-cache@11.2.2", "", {}, "sha512-F9ODfyqML2coTIsQpSkRHnLSZMtkU8Q+mSfcaIyKwy58u+8k5nvAYeiNhsyMARvzNcXJ9QfWVrcPsC9e9rAxtg=="],
 
-    "lucide-solid": ["lucide-solid@0.554.0", "", { "peerDependencies": { "solid-js": "^1.4.7" } }, "sha512-pt0KcZB7N/jVoLKng+kLpGTSoL3x03ByxbDVasMuTLvaZGVtio7rN946zlK9TrMZVwtAHuCvDn11+bEfKnMR3A=="],
+    "lucide-solid": ["lucide-solid@0.562.0", "", { "peerDependencies": { "solid-js": "^1.4.7" } }, "sha512-RzxujbWUoa4KqnV+/mYPINzyf1W969bv0jukSKcGExIl96QmRuylvBQ+d0UcOeZL/ASToPOWS34p9MfdzdvS9Q=="],
 
     "magic-string": ["magic-string@0.30.21", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.5" } }, "sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ=="],
 
