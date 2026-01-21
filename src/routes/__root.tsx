@@ -73,6 +73,15 @@ export const Route = createRootRoute({
 				href: appCss,
 			},
 		],
+		scripts: [
+			{
+				src: "https://faststats.dev/script.js",
+				"data-sitekey": "b8a7daa046cf889351a284d0925ab0eb",
+				"data-webVitals": "true",
+				"data-trackErrors": "true",
+				async: true,
+			},
+		],
 	}),
 	component: () => (
 		<ThemeProvider>
