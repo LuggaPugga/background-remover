@@ -11,21 +11,20 @@ const config = defineConfig({
 			"Cross-Origin-Embedder-Policy": "require-corp",
 		},
 	},
-	optimizeDeps: {
-		include: ["@huggingface/transformers"],
-	},
-	ssr: {
-		external: ["@huggingface/transformers"],
-	},
-	build: {
-		commonjsOptions: {
-			include: [/node_modules/],
-			transformMixedEsModules: true,
-		},
-	},
 	resolve: {
 		tsconfigPaths: true,
 	},
-	plugins: [nitro(), tailwindcss(), tanstackStart(), viteSolid({ ssr: true })],
+	plugins: [
+		nitro({
+			traceDeps: ["@huggingface/transformers"],
+			wasm: {
+				esmImport: true,
+				lazy: true,
+			},
+		}),
+		tailwindcss(),
+		tanstackStart(),
+		viteSolid({ ssr: true }),
+	],
 });
 export default config;
