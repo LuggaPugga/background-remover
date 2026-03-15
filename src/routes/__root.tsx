@@ -1,3 +1,4 @@
+import { WebAnalytics } from "@faststats/web";
 import {
 	createRootRoute,
 	HeadContent,
@@ -15,6 +16,13 @@ import appCss from "../styles.css?url";
 
 if (!isServer) {
 	configure();
+	new WebAnalytics({
+		siteKey: "b8a7daa046cf889351a284d0925ab0eb",
+		webVitals: {
+			enabled: true,
+		},
+		trackErrors: true,
+	}).start();
 }
 
 export const Route = createRootRoute({
@@ -71,15 +79,6 @@ export const Route = createRootRoute({
 			{
 				rel: "stylesheet",
 				href: appCss,
-			},
-		],
-		scripts: [
-			{
-				src: "https://faststats.dev/script.js",
-				"data-sitekey": "b8a7daa046cf889351a284d0925ab0eb",
-				"data-webVitals": "true",
-				"data-trackErrors": "true",
-				async: true,
 			},
 		],
 	}),
