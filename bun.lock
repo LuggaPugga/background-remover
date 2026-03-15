@@ -5,7 +5,7 @@
     "": {
       "name": "background-remover",
       "dependencies": {
-        "@faststats/web": "0.0.3",
+        "@faststats/web": "0.0.4",
         "@huggingface/transformers": "^3.8.1",
         "@kobalte/core": "^0.13.11",
         "@solid-primitives/media": "^2.3.5",
@@ -150,7 +150,7 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
 
-    "@faststats/web": ["@faststats/web@0.0.3", "", { "dependencies": { "@rrweb/rrweb-plugin-console-record": "^2.0.0-alpha.20", "rrweb": "^2.0.0-alpha.4", "rrweb-snapshot": "^2.0.0-alpha.4", "web-vitals": "^5.1.0" } }, "sha512-GL9E49Fw1uDInoV2n0g7TH2WLfgCxYOA1pQKrQ9RSegsRd11w1bkbfNxI9a0JtIkmHgNylmiG2lwnuhvtX4glw=="],
+    "@faststats/web": ["@faststats/web@0.0.4", "", { "dependencies": { "@rrweb/rrweb-plugin-console-record": "^2.0.0-alpha.20", "rrweb": "^2.0.0-alpha.4", "rrweb-snapshot": "^2.0.0-alpha.4", "web-vitals": "^5.1.0" } }, "sha512-gbysIpoM1vnCWByHPUR7ThzLucew4fHQteg3smgKiQ8Ic4tRRMyFHAVb7xyOGUtEMDxXgh5NfHPCF0bzbtfd6w=="],
 
     "@floating-ui/core": ["@floating-ui/core@1.7.3", "", { "dependencies": { "@floating-ui/utils": "^0.2.10" } }, "sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w=="],
 
