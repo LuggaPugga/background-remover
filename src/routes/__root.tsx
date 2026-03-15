@@ -20,7 +20,7 @@ if (!isServer) {
 		siteKey: "b8a7daa046cf889351a284d0925ab0eb",
 		trackWebVitals: true,
 		trackErrors: true,
-	}).start();
+	});
 }
 
 export const Route = createRootRoute({
