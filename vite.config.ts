@@ -26,13 +26,6 @@ const config = defineConfig({
 	resolve: {
 		tsconfigPaths: true,
 	},
-	plugins: [
-		nitro({
-			compressPublicAssets: true,
-		}),
-		tailwindcss(),
-		tanstackStart(),
-		viteSolid({ ssr: true }),
-	],
+	plugins: [nitro(), tailwindcss(), tanstackStart(), viteSolid({ ssr: true })],
 });
 export default config;
