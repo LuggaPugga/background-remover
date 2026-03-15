@@ -14,17 +14,6 @@ const config = defineConfig({
 	resolve: {
 		tsconfigPaths: true,
 	},
-	plugins: [
-		nitro({
-			traceDeps: ["@huggingface/transformers"],
-			wasm: {
-				esmImport: true,
-				lazy: true,
-			},
-		}),
-		tailwindcss(),
-		tanstackStart(),
-		viteSolid({ ssr: true }),
-	],
+	plugins: [nitro(), tailwindcss(), tanstackStart(), viteSolid({ ssr: true })],
 });
 export default config;

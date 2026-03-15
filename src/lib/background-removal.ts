@@ -59,6 +59,13 @@ export const MODELS: ModelConfig[] = [
 		},
 	},
 	{
+		id: "neural-guru/BgRemove_2.0",
+		name: "BgRemove_2.0",
+		requiresWebGPU: false,
+		description: "Fast and accurate model",
+		isDefault: false,
+	},
+	{
 		id: "Xenova/modnet",
 		name: "MODNet (WebGPU)",
 		requiresWebGPU: true,
@@ -150,11 +157,12 @@ export function clearProgressCallback(): void {
 	progressCallback = null;
 }
 
-const configureEnvironment = async (useProxy: boolean): Promise<void> => {
+const configureEnvironment = async (): Promise<void> => {
 	const { env } = await getTransformers();
 	env.allowLocalModels = false;
 	if (env.backends?.onnx?.wasm) {
-		env.backends.onnx.wasm.proxy = useProxy;
+		env.backends.onnx.wasm.proxy = false;
+		env.backends.onnx.wasm.numThreads = 1;
 	}
 };
 
@@ -173,7 +181,7 @@ const loadModel = async (modelConfig: ModelConfig): Promise<void> => {
 		}
 
 		progressCallback?.(0.1, "Initializing WebGPU...");
-		await configureEnvironment(true);
+		await configureEnvironment();
 		await new Promise((resolve) => setTimeout(resolve, 200));
 
 		progressCallback?.(0.3, `Loading ${modelConfig.name} model...`);
@@ -198,7 +206,7 @@ const loadModel = async (modelConfig: ModelConfig): Promise<void> => {
 		state.isWebGPUSupported = true;
 		progressCallback?.(1.0, "Model loaded");
 	} else {
-		await configureEnvironment(true);
+		await configureEnvironment();
 
 		const modelOptions: Record<string, unknown> = {};
 		if (modelConfig.dtype) {
@@ -256,7 +264,7 @@ const loadModel = async (modelConfig: ModelConfig): Promise<void> => {
 const loadIOSModel = async (): Promise<void> => {
 	const { AutoModel, AutoProcessor } = await getTransformers();
 	const defaultModel = getDefaultModel();
-	await configureEnvironment(true);
+	await configureEnvironment();
 
 	progressCallback?.(0.2, `Loading ${defaultModel.name} model...`);
 	state.model = await AutoModel.from_pretrained(defaultModel.id, {
