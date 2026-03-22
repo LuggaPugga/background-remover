@@ -30,6 +30,12 @@ interface ModelSwitcherProps {
 const getDefaultModelId = () =>
 	MODELS.find((m) => m.isDefault)?.id || MODELS[0].id;
 
+const progressToBarWidthPercent = (w: number) => {
+	if (!Number.isFinite(w)) return 0;
+	const pct = w <= 1 ? w * 100 : Math.min(100, w);
+	return Math.max(0, Math.min(100, pct));
+};
+
 export function ModelSwitcher(props: ModelSwitcherProps) {
 	const [selectedModel, setSelectedModel] = createSignal<string>(
 		getDefaultModelId(),
@@ -151,7 +157,7 @@ export function ModelSwitcher(props: ModelSwitcherProps) {
 						<div
 							class="h-full bg-primary transition-all duration-300 ease-out"
 							style={{
-								width: `${Math.max(0, Math.min(100, loadingProgress() * 100))}%`,
+								width: `${progressToBarWidthPercent(loadingProgress())}%`,
 							}}
 						/>
 					</div>

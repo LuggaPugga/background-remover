@@ -15,7 +15,12 @@ export function ModelLoadingIndicator(props: ModelLoadingIndicatorProps) {
 	};
 
 	const progress = () => props.progress ?? 0;
-	const percentage = () => Math.round(progress() * 100);
+	const percentage = () => {
+		const p = progress();
+		if (!Number.isFinite(p) || p <= 0) return 0;
+		if (p <= 1) return Math.min(100, Math.round(p * 100));
+		return Math.min(100, Math.round(p));
+	};
 
 	return (
 		<Show when={props.isLoading}>

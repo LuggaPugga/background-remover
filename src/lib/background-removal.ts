@@ -157,6 +157,23 @@ export function clearProgressCallback(): void {
 	progressCallback = null;
 }
 
+const fractionFromProgressCallbackInfo = (progressInfo: unknown): number => {
+	let raw = 0;
+	if (typeof progressInfo === "number") {
+		raw = progressInfo;
+	} else if (
+		progressInfo !== null &&
+		typeof progressInfo === "object" &&
+		"progress" in progressInfo
+	) {
+		const v = (progressInfo as { progress: unknown }).progress;
+		raw = typeof v === "number" ? v : 0;
+	}
+	if (!Number.isFinite(raw) || raw < 0) return 0;
+	if (raw > 1) return Math.min(1, raw / 100);
+	return Math.min(1, raw);
+};
+
 const configureEnvironment = async (): Promise<void> => {
 	const { env } = await getTransformers();
 	env.allowLocalModels = false;
@@ -188,12 +205,7 @@ const loadModel = async (modelConfig: ModelConfig): Promise<void> => {
 		state.model = await AutoModel.from_pretrained(modelConfig.id, {
 			device: "webgpu",
 			progress_callback: (progressInfo) => {
-				const progress =
-					typeof progressInfo === "number"
-						? progressInfo
-						: "progress" in progressInfo
-							? progressInfo.progress
-							: 0;
+				const progress = fractionFromProgressCallbackInfo(progressInfo);
 				progressCallback?.(
 					0.3 + progress * 0.5,
 					`Loading ${modelConfig.name} model... ${Math.round(progress * 100)}%`,
@@ -220,12 +232,7 @@ const loadModel = async (modelConfig: ModelConfig): Promise<void> => {
 				? {
 						...modelOptions,
 						progress_callback: (progressInfo) => {
-							const progress =
-								typeof progressInfo === "number"
-									? progressInfo
-									: "progress" in progressInfo
-										? progressInfo.progress
-										: 0;
+							const progress = fractionFromProgressCallbackInfo(progressInfo);
 							progressCallback?.(
 								0.2 + progress * 0.5,
 								`Loading ${modelConfig.name} model... ${Math.round(progress * 100)}%`,
@@ -234,12 +241,7 @@ const loadModel = async (modelConfig: ModelConfig): Promise<void> => {
 					}
 				: {
 						progress_callback: (progressInfo) => {
-							const progress =
-								typeof progressInfo === "number"
-									? progressInfo
-									: "progress" in progressInfo
-										? progressInfo.progress
-										: 0;
+							const progress = fractionFromProgressCallbackInfo(progressInfo);
 							progressCallback?.(
 								0.2 + progress * 0.5,
 								`Loading ${modelConfig.name} model... ${Math.round(progress * 100)}%`,
@@ -269,12 +271,7 @@ const loadIOSModel = async (): Promise<void> => {
 	progressCallback?.(0.2, `Loading ${defaultModel.name} model...`);
 	state.model = await AutoModel.from_pretrained(defaultModel.id, {
 		progress_callback: (progressInfo) => {
-			const progress =
-				typeof progressInfo === "number"
-					? progressInfo
-					: "progress" in progressInfo
-						? progressInfo.progress
-						: 0;
+			const progress = fractionFromProgressCallbackInfo(progressInfo);
 			progressCallback?.(
 				0.2 + progress * 0.5,
 				`Loading ${defaultModel.name} model... ${Math.round(progress * 100)}%`,
