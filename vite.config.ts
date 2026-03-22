@@ -5,6 +5,13 @@ import { defineConfig } from "vite";
 import viteSolid from "vite-plugin-solid";
 
 const config = defineConfig({
+	build: {
+		rolldownOptions: {
+			experimental: {
+				lazyBarrel: true,
+			},
+		},
+	},
 	server: {
 		headers: {
 			"Cross-Origin-Opener-Policy": "same-origin",
