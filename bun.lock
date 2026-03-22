@@ -18,7 +18,7 @@
         "clsx": "^2.1.1",
         "lucide-solid": "^0.577.0",
         "nitro": "^3.0.260311-beta",
-        "onedollarstats": "^0.0.11",
+        "onedollarstats": "^0.0.16",
         "solid-js": "^1.9.11",
         "tailwind-merge": "^3.5.0",
         "tailwindcss": "^4.2.1",
@@ -664,7 +664,7 @@
 
     "ohash": ["ohash@2.0.11", "", {}, "sha512-RdR9FQrFwNBNXAr4GixM8YaRZRJ5PUWbKYbE5eOsrwAjJW0q2REGcf79oYPsLyskQCZG1PLN+S/K1V00joZAoQ=="],
 
-    "onedollarstats": ["onedollarstats@0.0.11", "", {}, "sha512-GboD/AZdfQB9Bhs0uupp40jG/F+yI4ed7rkUI6zbtXXqqKdo8qlT1ZqGATXF4zccBXnPylUvG7bYpiDyaONpjg=="],
+    "onedollarstats": ["onedollarstats@0.0.16", "", {}, "sha512-nv1zZYIiVXW0me4fiFUB6VL0WByJSMMnP2wo/UjYDdihUTBq7PPeWwdpwwoAxG4dIqFYIhFbPX+pS2qIIlHOaw=="],
 
     "onnxruntime-common": ["onnxruntime-common@1.21.0", "", {}, "sha512-Q632iLLrtCAVOTO65dh2+mNbQir/QNTVBG3h/QdZBpns7mZ0RYbLRBgGABPbpU9351AgYy7SJf1WaeVwMrBFPQ=="],
 
