@@ -5,7 +5,7 @@
     "": {
       "name": "background-remover",
       "dependencies": {
-        "@faststats/web": "0.1.3",
+        "@faststats/web": "0.2.7",
         "@huggingface/transformers": "^3.8.1",
         "@kobalte/core": "^0.13.11",
         "@solid-primitives/media": "^2.3.5",
@@ -150,7 +150,7 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
 
-    "@faststats/web": ["@faststats/web@0.1.3", "", { "dependencies": { "@rrweb/rrweb-plugin-console-record": "^2.0.0-alpha.20", "rrweb": "^2.0.0-alpha.4", "rrweb-snapshot": "^2.0.0-alpha.4", "web-vitals": "^5.1.0" } }, "sha512-W9X4pKHY9eufsdPO16QXtYqTgr6abqa9z7tlhzjHiLVs8W9RwKfiHwGgZwGhj0YJL3UcjPFcd1Q1MM4RY2fKUw=="],
+    "@faststats/web": ["@faststats/web@0.2.7", "", { "dependencies": { "@rrweb/rrweb-plugin-console-record": "^2.0.0-alpha.20", "@rrweb/rrweb-plugin-sequential-id-record": "^2.0.0-alpha.20", "rrweb": "^2.0.0-alpha.4", "rrweb-snapshot": "^2.0.0-alpha.4", "web-vitals": "^5.1.0" } }, "sha512-2En3P6+WSFmqJ5xeFs1uKegTg8pvQywdy7g1WXxIiSbRsHVg+xh4Jj4B+QNdk+NIM6Y+mwVHTzy2zRcSTSQnLw=="],
 
     "@floating-ui/core": ["@floating-ui/core@1.7.3", "", { "dependencies": { "@floating-ui/utils": "^0.2.10" } }, "sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w=="],
 
@@ -299,6 +299,8 @@
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.0-rc.10", "", {}, "sha512-UkVDEFk1w3mveXeKgaTuYfKWtPbvgck1dT8TUG3bnccrH0XtLTuAyfCoks4Q/M5ZGToSVJTIQYCzy2g/atAOeg=="],
 
     "@rrweb/rrweb-plugin-console-record": ["@rrweb/rrweb-plugin-console-record@2.0.0-alpha.20", "", { "peerDependencies": { "@rrweb/utils": "^2.0.0-alpha.20", "rrweb": "^2.0.0-alpha.20" } }, "sha512-4v05qwW7C4AnGxkwf7YeIkSGrNJpZ4tFj2j5Wa6suHlDsDvpqHH/ZRNTqdNRjeWcceSMuqka/zULOGX/f0KcCA=="],
+
+    "@rrweb/rrweb-plugin-sequential-id-record": ["@rrweb/rrweb-plugin-sequential-id-record@2.0.0-alpha.20", "", { "peerDependencies": { "rrweb": "^2.0.0-alpha.20" } }, "sha512-u8rJN//w5VgWgPtGEHIxhld872MysBmH1GXsiolPWAWzL13Is5jHxA8doezaJFoQ/i18B2x5ZNDVF/7pgSg4yQ=="],
 
     "@rrweb/types": ["@rrweb/types@2.0.0-alpha.20", "", {}, "sha512-RbnDgKxA/odwB1R4gF7eUUj+rdSrq6ROQJsnMw7MIsGzlbSYvJeZN8YY4XqU0G6sKJvXI6bSzk7w/G94jNwzhw=="],
 
