@@ -24,7 +24,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-solid": "^0.577.0",
-    "@faststats/web": "0.1.3",
+    "@faststats/web": "0.2.12",
     "nitro": "^3.0.260311-beta",
     "onedollarstats": "^0.0.16",
     "solid-js": "^1.9.11",
