@@ -13,7 +13,7 @@
     "check": "biome check"
   },
   "dependencies": {
-    "@huggingface/transformers": "^3.8.1",
+    "@huggingface/transformers": "^4.0.0",
     "@kobalte/core": "^0.13.11",
     "@solid-primitives/media": "^2.3.5",
     "@solid-primitives/storage": "^4.3.4",
