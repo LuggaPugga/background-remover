@@ -88,16 +88,6 @@ interface ModelInfo {
 	isIOS: boolean;
 }
 
-interface GPU extends Navigator {
-	gpu?: {
-		requestAdapter(): Promise<GPUAdapter | null>;
-	};
-}
-
-interface GPUAdapter {
-	readonly features: ReadonlySet<string>;
-}
-
 const detectIOS = (): boolean => {
 	if (typeof window === "undefined" || typeof navigator === "undefined") {
 		return false;
@@ -119,7 +109,7 @@ const detectIOS = (): boolean => {
 };
 
 export async function checkWebGPUAvailability(): Promise<boolean> {
-	const gpu = (navigator as GPU).gpu;
+	const gpu = navigator.gpu;
 	if (!gpu) {
 		return false;
 	}
@@ -187,7 +177,7 @@ const loadModel = async (modelConfig: ModelConfig): Promise<void> => {
 	const { AutoModel, AutoProcessor } = await getTransformers();
 
 	if (modelConfig.requiresWebGPU && modelConfig.device === "webgpu") {
-		const gpu = (navigator as GPU).gpu;
+		const gpu = navigator.gpu;
 		if (!gpu) {
 			throw new Error("WebGPU is required but not available");
 		}
@@ -353,7 +343,7 @@ export async function initializeModel(forceModelId?: string): Promise<boolean> {
 export function getModelInfo(): ModelInfo {
 	return {
 		currentModelId: state.currentModelId,
-		isWebGPUSupported: Boolean((navigator as GPU).gpu),
+		isWebGPUSupported: Boolean(navigator.gpu),
 		isIOS: state.isIOS,
 	};
 }
