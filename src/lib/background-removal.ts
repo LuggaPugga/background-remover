@@ -15,7 +15,7 @@ async function getTransformers() {
 	return transformersModule;
 }
 
-export interface ProcessorConfig {
+interface ProcessorConfig {
 	revision?: string;
 	config?: Record<string, unknown>;
 }
@@ -436,19 +436,4 @@ export async function processImage(image: File): Promise<File> {
 	} finally {
 		URL.revokeObjectURL(imageUrl);
 	}
-}
-
-export async function processImages(images: File[]): Promise<File[]> {
-	const processedFiles: File[] = [];
-
-	for (const image of images) {
-		try {
-			const processedFile = await processImage(image);
-			processedFiles.push(processedFile);
-		} catch (error) {
-			console.error(`Error processing image ${image.name}:`, error);
-		}
-	}
-
-	return processedFiles;
 }

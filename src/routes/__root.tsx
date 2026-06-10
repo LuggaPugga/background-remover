@@ -18,8 +18,10 @@ if (!isServer) {
 	configure();
 	new WebAnalytics({
 		siteKey: "b8a7daa046cf889351a284d0925ab0eb",
-		trackWebVitals: true,
 		trackErrors: true,
+		webVitals: {
+			enabled: true,
+		},
 	});
 }
 
