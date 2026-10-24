@@ -1,6 +1,4 @@
 import tailwindcss from "@tailwindcss/vite";
-import { tanstackStart } from "@tanstack/solid-start/plugin/vite";
-import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import viteSolid from "vite-plugin-solid";
 
@@ -21,6 +19,6 @@ const config = defineConfig({
 	resolve: {
 		tsconfigPaths: true,
 	},
-	plugins: [nitro(), tailwindcss(), tanstackStart(), viteSolid({ ssr: true })],
+	plugins: [tailwindcss(), viteSolid()],
 });
 export default config;

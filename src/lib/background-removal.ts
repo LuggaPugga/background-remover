@@ -1,4 +1,4 @@
-import { trackEvent } from "@faststats/web";
+import { track } from "@faststats/web";
 import type {
 	PreTrainedModel,
 	Processor,
@@ -390,7 +390,7 @@ export async function processImage(image: File): Promise<File> {
 	const img = await RawImage.fromURL(imageUrl);
 
 	try {
-		trackEvent("processImage", {
+		track("processImage", {
 			model: modelName,
 		});
 		event("processImage", {

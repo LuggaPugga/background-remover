@@ -1,6 +1,6 @@
 import { createPrefersDark } from "@solid-primitives/media";
 import { makePersisted } from "@solid-primitives/storage";
-import type { Accessor, JSX } from "solid-js";
+import type { Accessor, JSX, Signal } from "solid-js";
 import {
 	createContext,
 	createEffect,
@@ -8,7 +8,6 @@ import {
 	createSignal,
 	useContext,
 } from "solid-js";
-import { isServer } from "solid-js/web";
 
 type Theme = "light" | "dark" | "system";
 
@@ -20,7 +19,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue>();
 
-const [storedTheme, setStoredTheme] = makePersisted(
+const [storedTheme, setStoredTheme] = makePersisted<Theme, Signal<Theme>>(
 	createSignal<Theme>("system"),
 	{ name: "theme" },
 );
@@ -31,17 +30,6 @@ export function useTheme() {
 		throw new Error("useTheme must be used within a ThemeProvider");
 	}
 	return context;
-}
-
-export function getInitialThemeClass(): "light" | "dark" {
-	if (isServer) return "dark";
-	const theme = storedTheme();
-	if (theme === "system") {
-		return window.matchMedia("(prefers-color-scheme: dark)").matches
-			? "dark"
-			: "light";
-	}
-	return theme;
 }
 
 interface ThemeProviderProps {
@@ -60,7 +48,6 @@ export function ThemeProvider(props: ThemeProviderProps) {
 	});
 
 	createEffect(() => {
-		if (isServer) return;
 		const resolved = resolvedTheme();
 		const root = document.documentElement;
 		root.classList.remove("light", "dark");

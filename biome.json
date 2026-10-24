@@ -12,7 +12,6 @@
 			"vite.config.ts",
 			"**/.vscode/**/*",
 			"**/index.html",
-			"!**/src/routeTree.gen.ts",
 			"!**/src/styles.css"
 		]
 	},
@@ -24,7 +23,7 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"preset": "recommended"
 		}
 	},
 	"javascript": {
