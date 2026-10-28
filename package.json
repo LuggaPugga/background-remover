@@ -13,7 +13,7 @@
     "check": "biome check"
   },
   "dependencies": {
-    "@faststats/web": "0.13.2",
+    "@faststats/web": "0.14.0",
     "@huggingface/transformers": "^4.3.1",
     "@kobalte/core": "^0.13.14",
     "@solid-primitives/media": "^2.3.6",
