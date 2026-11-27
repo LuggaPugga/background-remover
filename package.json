@@ -17,7 +17,7 @@
     "@huggingface/transformers": "^4.3.1",
     "@kobalte/core": "^0.13.14",
     "@solid-primitives/media": "^2.3.6",
-    "@solid-primitives/storage": "^4.4.0",
+    "@solid-primitives/storage": "^5.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-solid": "^1.61.0",
